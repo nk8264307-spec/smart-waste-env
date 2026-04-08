@@ -63,6 +63,7 @@ To design an environment where agents learn to:
 - Dockerfile → Container setup
 - requirements.txt → Dependencies
 - README.md → Documentation
+- inference.py → Execution
 
 
 ## How to Run
