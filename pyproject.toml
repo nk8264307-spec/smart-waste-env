@@ -1,0 +1,16 @@
+[project]
+name = "smart-waste-env"
+version = "0.1.0"
+description = "Smart Waste Management Multi-Agent RL Environment"
+authors = [
+    {name = "Sachin"}
+]
+dependencies = [
+    "numpy",
+    "matplotlib",
+    "flask"
+]
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
