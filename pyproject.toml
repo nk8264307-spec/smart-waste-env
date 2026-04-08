@@ -2,13 +2,18 @@
 name = "smart-waste-env"
 version = "0.1.0"
 description = "Smart Waste Management Multi-Agent RL Environment"
-authors = [{name = "Aniruddh Venkatesan","N Sachin","Sonika P"}]
+
+authors = [
+  { name = "Sachin" },
+  { name = "Aniruddh Venkatesan" },
+  { name = "Sonika P" }
+]
 
 dependencies = [
-    "numpy",
-    "matplotlib",
-    "flask",
-    "openenv>=0.2.0"
+  "numpy",
+  "matplotlib",
+  "flask",
+  "openenv>=0.2.0"
 ]
 
 [project.scripts]
