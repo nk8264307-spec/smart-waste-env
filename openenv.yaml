@@ -1,0 +1,13 @@
+name: smart-waste-env
+description: Multi-agent waste management system
+
+agents:
+  - garbage_truck
+
+actions:
+  - move_to_bin
+  - empty_bin
+
+state:
+  bins: list
+  trucks: list
