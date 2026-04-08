@@ -58,6 +58,7 @@ To design an environment where agents learn to:
 ## Project Structure
 - env/ → Environment logic
 - tasks/ → Difficulty levels
+- server/ → API
 - run.py → Simulation runner
 - openenv.yaml→ Environment config
 - Dockerfile → Container setup
@@ -65,6 +66,7 @@ To design an environment where agents learn to:
 - README.md → Documentation
 - inference.py → Execution
 - pyproject.toml → Configuration
+- uv.lock → lockfile
 
 
 ## How to Run
