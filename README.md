@@ -64,6 +64,7 @@ To design an environment where agents learn to:
 - requirements.txt → Dependencies
 - README.md → Documentation
 - inference.py → Execution
+- pyproject.toml → Configuration
 
 
 ## How to Run
