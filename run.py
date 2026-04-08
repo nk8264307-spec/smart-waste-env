@@ -1,16 +1,25 @@
+from flask import Flask, send_file, request, jsonify
 import random
+import os
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from env.waste_env import WasteEnv
 
+app = Flask(__name__)
+
+random.seed(42)
+
+env = WasteEnv()
+current_state = env.reset()
 
 def get_status(bins):
     if max(bins) > 100:
-        return "🔴 CRITICAL"
+        return "CRITICAL"
     elif max(bins) > 70:
-        return "🟠 WARNING"
+        return "WARNING"
     else:
-        return "🟢 GOOD"
-
+        return "GOOD"
 
 def smart_agent(state, env):
     actions = []
@@ -25,52 +34,37 @@ def smart_agent(state, env):
 
     return actions
 
-
 def random_agent(env):
     return [random.randint(0, env.num_bins) for _ in range(env.num_trucks)]
 
-
 def run_simulation(agent_type="smart"):
-    env = WasteEnv()
-    state = env.reset()
+    env_local = WasteEnv()
+    state = env_local.reset()
 
     total_reward = 0
     history = []
-
-    print("\n" + "="*60)
-    print(f"🚀 RUNNING {agent_type.upper()} AGENT SIMULATION")
-    print("="*60)
+    output = ""
 
     for step in range(20):
-
         if agent_type == "smart":
-            actions = smart_agent(state, env)
+            actions = smart_agent(state, env_local)
         else:
-            actions = random_agent(env)
+            actions = random_agent(env_local)
 
-        state, reward = env.step(actions)
+        state, reward = env_local.step(actions)
         total_reward += reward
 
         history.append(state["bins"].copy())
 
-        print(f"\n🔹 STEP {step}")
-        print(f"👉 Actions        : {actions}")
-        print(f"🗑️ Bins         : {state['bins']}")
-        print(f"🚛 Trucks       : {state['trucks']}")
-        print(f"📌 Status       : {get_status(state['bins'])}")
-        print(f"⭐ Reward       : {reward}")
+        output += f"Step {step}\n"
+        output += f"Bins: {state['bins']} | Reward: {reward}\n"
 
-    return total_reward, history
+    return total_reward, history, output
 
+def plot_graph(history, filename, title):
+    history = list(zip(*history))
 
-# RUN BOTH AGENTS
-smart_reward, smart_history = run_simulation("smart")
-random_reward, random_history = run_simulation("random")
-
-
-# 📊 GRAPH PLOTTING
-def plot_graph(history, title):
-    history = list(zip(*history))  # transpose
+    plt.figure(figsize=(8, 5))
 
     for i, bin_data in enumerate(history):
         plt.plot(bin_data, label=f"Bin {i}")
@@ -79,38 +73,78 @@ def plot_graph(history, title):
     plt.xlabel("Steps")
     plt.ylabel("Fill Level")
     plt.legend()
-    plt.show()
+    plt.tight_layout()
 
+    plt.savefig(filename)
+    plt.close()
 
-plot_graph(smart_history, "Smart Agent Performance")
-plot_graph(random_history, "Random Agent Performance")
+print("Generating graphs...")
 
+smart_reward, smart_history, smart_output = run_simulation("smart")
+random_reward, random_history, random_output = run_simulation("random")
 
-# 📈 FINAL COMPARISON
-print("\n" + "="*60)
-print("📊 FINAL COMPARISON")
-print("="*60)
+plot_graph(smart_history, "smart.png", "Smart Agent Performance")
+plot_graph(random_history, "random.png", "Random Agent Performance")
 
-print(f"🤖 Smart Agent Reward  : {smart_reward}")
-print(f"🎲 Random Agent Reward : {random_reward}")
+final = f"""
+FINAL RESULTS
+Smart Reward  : {smart_reward}
+Random Reward : {random_reward}
+Efficiency    : {smart_reward - random_reward}
+"""
 
-if smart_reward > random_reward:
-    print("🏆 Smart Agent Performs Better!")
-else:
-    print("⚠️ Random Agent Performs Better (unexpected!)")
+@app.route("/")
+def home():
+    return f"""
+    <h1>🚀 Smart Waste Management</h1>
 
+    <h2>🧠 Smart Agent</h2>
+    <pre>{smart_output}</pre>
 
-# 🎯 EFFICIENCY SCORE
-efficiency = smart_reward - random_reward
+    <h2>🎲 Random Agent</h2>
+    <pre>{random_output}</pre>
 
-print(f"\n🎯 Efficiency Score: {efficiency}")
+    <h2>📊 Results</h2>
+    <pre>{final}</pre>
 
-if efficiency > 100:
-    print("🔥 Excellent Optimization")
-elif efficiency > 0:
-    print("👍 Good Performance")
-else:
-    print("⚠️ Needs Improvement")
+    <h2>📈 Smart Graph</h2>
+    <img src="/smart_graph" width="600">
 
-print("\n✅ Simulation Complete!")
-print("="*60)
+    <h2>📉 Random Graph</h2>
+    <img src="/random_graph" width="600">
+    """
+
+@app.route("/smart_graph")
+def smart_graph():
+    return send_file("smart.png", mimetype='image/png')
+
+@app.route("/random_graph")
+def random_graph():
+    return send_file("random.png", mimetype='image/png')
+
+@app.route("/reset", methods=["POST"])
+def reset():
+    global current_state
+    current_state = env.reset()
+    return jsonify(current_state)
+
+@app.route("/step", methods=["POST"])
+def step():
+    global current_state
+    data = request.get_json()
+
+    actions = data.get("actions", [])
+
+    current_state, reward = env.step(actions)
+
+    return jsonify({
+        "state": current_state,
+        "reward": reward
+    })
+
+@app.route("/state", methods=["GET"])
+def state():
+    return jsonify(current_state)
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=7860)
