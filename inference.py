@@ -1,12 +1,16 @@
 from env.waste_env import WasteEnv
 import random
+import sys
 
 random.seed(42)
 
 env = WasteEnv()
 state = env.reset()
 
-print("Initial State:", state)
+task_name = "smart_waste"
+
+# START BLOCK
+print(f"[START] task={task_name}", flush=True)
 
 total_reward = 0
 
@@ -16,10 +20,8 @@ for step in range(20):
     state, reward = env.step(actions)
     total_reward += reward
 
-    print(f"Step {step}")
-    print("Actions:", actions)
-    print("State:", state)
-    print("Reward:", reward)
-    print("-" * 30)
+    # STEP BLOCK
+    print(f"[STEP] step={step} reward={reward}", flush=True)
 
-print("Total Reward:", total_reward)
+# END BLOCK
+print(f"[END] task={task_name} score={total_reward} steps=20", flush=True)
