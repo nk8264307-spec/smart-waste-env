@@ -3,18 +3,22 @@ import random
 from env.waste_env import WasteEnv
 from openai import OpenAI
 
-client = OpenAI(
-    base_url=os.environ["API_BASE_URL"],
-    api_key=os.environ["API_KEY"]
-)
+try:
+    client = OpenAI(
+        base_url=os.environ.get("API_BASE_URL"),
+        api_key=os.environ.get("API_KEY")
+    )
 
-response = client.chat.completions.create(
-    model="gpt-3.5-turbo",
-    messages=[
-        {"role": "user", "content": "Optimize waste collection"}
-    ]
-)
+    response = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[{"role": "user", "content": "Optimize waste collection"}],
+        timeout=5
+    )
 
+except Exception as e:
+    print("LLM call failed, continuing...", flush=True)
+
+# ---------------- ENV ----------------
 random.seed(42)
 
 env = WasteEnv()
