@@ -1,6 +1,19 @@
-from env.waste_env import WasteEnv
+import os
 import random
-import sys
+from env.waste_env import WasteEnv
+from openai import OpenAI
+
+client = OpenAI(
+    base_url=os.environ["API_BASE_URL"],
+    api_key=os.environ["API_KEY"]
+)
+
+response = client.chat.completions.create(
+    model="gpt-3.5-turbo",
+    messages=[
+        {"role": "user", "content": "Optimize waste collection"}
+    ]
+)
 
 random.seed(42)
 
@@ -9,7 +22,6 @@ state = env.reset()
 
 task_name = "smart_waste"
 
-# START BLOCK
 print(f"[START] task={task_name}", flush=True)
 
 total_reward = 0
@@ -20,8 +32,6 @@ for step in range(20):
     state, reward = env.step(actions)
     total_reward += reward
 
-    # STEP BLOCK
     print(f"[STEP] step={step} reward={reward}", flush=True)
 
-# END BLOCK
 print(f"[END] task={task_name} score={total_reward} steps=20", flush=True)
